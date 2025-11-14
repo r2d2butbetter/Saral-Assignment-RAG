@@ -1,5 +1,5 @@
 dotenv
 google-genai
 langchain
-langchain-google-genai
+langchain-ollama
 langchain-community
