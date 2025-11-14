@@ -1,0 +1,7 @@
+__pycache__
+.vscode
+faiss_index
+sample_docs
+test.py
+
+.env
