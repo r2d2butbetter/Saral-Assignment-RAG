@@ -12,3 +12,15 @@ class FullScriptUpdate(BaseModel):
     """Data model for the full updated script and the list of changes."""
     changes: list[ScriptDelta]
     full_updated_script: str = Field(description="The complete, new script with all changes applied")
+
+
+class Slide(BaseModel):
+    """Data model for a single slide."""
+    title: str = Field(description="The title of the slide")
+    bullets: list[str] = Field(description="List of bullet points for the slide")
+
+
+class SlideData(BaseModel):
+    """Data model for presentation slides."""
+    presentation_title: str = Field(description="Overall title of the presentation")
+    slides: list[Slide] = Field(description="List of slides in the presentation")

@@ -1,8 +1,8 @@
 import streamlit as st
 from langchain_core.messages import HumanMessage, AIMessage
 
-from chains import load_models_and_retriever, create_rag_chain, create_refinement_chain, contextualize_question
-from display import display_changes, display_answer, display_sources
+from chains import load_models_and_retriever, create_rag_chain, create_refinement_chain, create_slide_chain, contextualize_question
+from display import display_changes, display_answer, display_sources, display_slides
 
 
 #loading models.
@@ -11,9 +11,10 @@ def get_models_and_chains():
     llm, retriever, structured_llm = load_models_and_retriever()
     rag_chain = create_rag_chain(llm, retriever)
     refinement_chain = create_refinement_chain(llm, retriever, structured_llm)
-    return llm, retriever, rag_chain, refinement_chain
+    slide_chain = create_slide_chain(llm, retriever)
+    return llm, retriever, rag_chain, refinement_chain, slide_chain
 
-llm, retriever, rag_chain, refinement_chain = get_models_and_chains()
+llm, retriever, rag_chain, refinement_chain, slide_chain = get_models_and_chains()
 
 
 st.set_page_config(page_title="SARAL Chatbot Prototype", layout="wide")
@@ -30,6 +31,8 @@ for msg in st.session_state.chat_history:
     else:
         st.chat_message("ai").write(msg.content)
 
+# Slide generation toggle
+generate_slides = st.checkbox("📊 Also generate presentation slides", value=False)
 
 if prompt := st.chat_input():
 
@@ -89,6 +92,19 @@ if prompt := st.chat_input():
                 
                 display_answer(answer)
                 display_sources(answer, retrieved_docs)
+                
+                # Generate slides if requested
+                if generate_slides:
+                    st.divider()
+                    with st.spinner("Generating presentation slides..."):
+                        try:
+                            slide_data = slide_chain.invoke({
+                                "input": prompt,
+                                "chat_history": st.session_state.chat_history
+                            })
+                            display_slides(slide_data)
+                        except Exception as e:
+                            st.error(f"Error generating slides: {e}")
 
     st.session_state.chat_history.append(HumanMessage(content=prompt))
     st.session_state.chat_history.append(AIMessage(content=answer))
